@@ -1,5 +1,5 @@
 const EventEmitter = require('events')
-const {print} = require('./utils.js')
+const { print } = require('./utils.js')
 
 const stopActions = ['clearSelection', 'keepSelection', 'activateSelection']
 const wcs = Symbol('webContents')
@@ -46,31 +46,34 @@ class Find extends EventEmitter {
         return !!this[requestId]
     }
 
-    startFind(text = '', forward = true, matchCase = false) {
+    async startFind(text = '', forward = true, matchCase = false) {
         if (!text) return
         this[activeMatch] = 0
         this[matches] = 0
         this[preText] = text
-        this[requestId] = this[wcs].findInPage(this[preText], {
+        this[requestId] = await this[wcs].findInPage(this[preText], {
             forward,
             matchCase
         })
+
         print(`[Find] startFind text=${text} forward=${forward} matchCase=${matchCase}`)
     }
 
-    findNext(forward, matchCase = false) {
+    async findNext(forward, matchCase = false) {
         if (!this.isFinding()) throw new Error('Finding did not start yet !')
-        this[requestId] = this[wcs].findInPage(this[preText], {
+        this[requestId] = await this[wcs].findInPage(this[preText], {
             forward,
             matchCase,
             findNext: true
         })
+
         print(`[Find] findNext text=${this[preText]} forward=${forward} matchCase=${matchCase}`)
     }
 
-    stopFind(action) {
+    async stopFind(action) {
         stopActions.includes(action) ? '' : action = 'clearSelection'
-        this[wcs].stopFindInPage(action)
+        await this[wcs].stopFindInPage(action)
+
         print(`[Find] stopFind action=${action}`)
     }
 }
